@@ -4,7 +4,40 @@ import colorama
 import json
 import time
 import sys
+import openmeteo_requests
 
+basarisiz = r"""
+ ██████╗ ██╗██████╗ ██╗███████╗                               
+██╔════╝ ██║██╔══██╗██║██╔════╝                               
+██║  ███╗██║██████╔╝██║███████╗                               
+██║   ██║██║██╔══██╗██║╚════██║                               
+╚██████╔╝██║██║  ██║██║███████║                               
+ ╚═════╝ ╚═╝╚═╝  ╚═╝╚═╝╚══════╝                               
+                                                              
+██████╗  █████╗ ███████╗ █████╗ ██████╗ ██╗███████╗██╗███████╗
+██╔══██╗██╔══██╗██╔════╝██╔══██╗██╔══██╗██║██╔════╝██║╚══███╔╝
+██████╔╝███████║███████╗███████║██████╔╝██║███████╗██║  ███╔╝ 
+██╔══██╗██╔══██║╚════██║██╔══██║██╔══██╗██║╚════██║██║ ███╔╝  
+██████╔╝██║  ██║███████║██║  ██║██║  ██║██║███████║██║███████╗
+╚═════╝ ╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝╚══════╝╚═╝╚══════╝"""
+
+
+
+basarili= r"""
+ ██████╗ ██╗██████╗ ██╗███████╗                       
+██╔════╝ ██║██╔══██╗██║██╔════╝                       
+██║  ███╗██║██████╔╝██║███████╗                       
+██║   ██║██║██╔══██╗██║╚════██║                       
+╚██████╔╝██║██║  ██║██║███████║                       
+ ╚═════╝ ╚═╝╚═╝  ╚═╝╚═╝╚══════╝                       
+                                                      
+██████╗  █████╗ ███████╗ █████╗ ██████╗ ██╗██╗     ██╗
+██╔══██╗██╔══██╗██╔════╝██╔══██╗██╔══██╗██║██║     ██║
+██████╔╝███████║███████╗███████║██████╔╝██║██║     ██║
+██╔══██╗██╔══██║╚════██║██╔══██║██╔══██╗██║██║     ██║
+██████╔╝██║  ██║███████║██║  ██║██║  ██║██║███████╗██║
+╚═════╝ ╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝╚══════╝╚═╝
+"""
 
 filigran = r"""
 ███╗   ███╗██╗   ██╗███████╗████████╗██╗   ██╗███████╗                      
@@ -20,7 +53,94 @@ filigran = r"""
 ██║╚██╔╝██║██║   ██║██║     ██║   ██║       ██║   ██║   ██║██║   ██║██║     
 ██║ ╚═╝ ██║╚██████╔╝███████╗██║   ██║       ██║   ╚██████╔╝╚██████╔╝███████╗
 ╚═╝     ╚═╝ ╚═════╝ ╚══════╝╚═╝   ╚═╝       ╚═╝    ╚═════╝  ╚═════╝ ╚══════╝ """
-WEBHOOK_URL = ""  # ← Kendi Webhook Url'ni Yaz
+
+
+
+def havaDurumu():
+    os.system("cls||clear")
+    print(colorama.Fore.GREEN + filigran)
+    print(colorama.Fore.WHITE + "Lütfen Hava Durumunu Bulmak İstediğiniz Şehri Giriniz.")
+    sehir = input(colorama.Fore.GREEN)
+    api = f"https://geocoding-api.open-meteo.com/v1/search?name={sehir}&count=1&language=tr&format=json"
+    try:
+        r = requests.get(api)
+        data = r.json()
+        enlem = data["results"][0]["latitude"]
+        boylam = data["results"][0]["longitude"]
+        print(enlem,boylam)
+        params ={
+            "latitude": enlem,
+            "longitude": boylam,
+            "current": ["temperature_2m"],
+            "hourly": ["temperature_2m"],
+            "timezone": "auto",
+        }
+        havaApi = "https://api.open-meteo.com/v1/forecast"
+        r = requests.get(havaApi,params=params)
+        data = r.json()
+        current = data["current"]
+        if r.status_code == 200:
+            print(f"Şu An Ki Sıcaklık: {current["temperature_2m"]}")
+    except KeyError:
+        print(colorama.Fore.RED + "Hata! Şehir Bulunamadı Tekrar Dene!")
+        time.sleep(2)
+    except Exception as hata:
+        print(colorama.Fore.RED + f"Beklenmedik Bir Hata Oluştu Bize Bildirin...,{hata}")
+        print(colorama.Fore.BLUE + "https://musty.com")
+        print("Devam Etmek İçin Herhangi Bir Tuşa Basın...")
+        input()
+        start()
+
+
+
+
+
+def urlKisalt():
+    os.system("cls||clear")
+    print(colorama.Fore.GREEN + filigran)
+    print(colorama.Fore.WHITE + "Lütfen Kısaltmak İstediğiniz Linki Giriniz:")
+    uzunLink = input().strip()
+
+    if not uzunLink.startswith("http"):
+        uzunLink = "https://" + uzunLink
+
+    if not uzunLink:
+        print(colorama.Fore.RED + "Uzun Link Boş Olamaz!")
+        time.sleep(2)
+        urlKisalt()
+        return
+
+    
+    apiUrl = "http://tinyurl.com/api-create.php"
+
+    params = {"url": uzunLink}
+
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36"
+    }
+
+    try:
+        r = requests.get(
+            apiUrl, 
+            params=params, 
+            headers=headers,
+            timeout=15,
+            verify=True,
+            proxies={}
+        )
+        
+        if r.status_code == 200:
+            kısaUrl = r.text.strip()
+            print(colorama.Fore.GREEN + f"Url Başarıyla Kısaltıldı: {kısaUrl}")
+        else:
+            print(colorama.Fore.RED + f"Hata! Status: {r.status_code}")
+            print(r.text)
+            
+    except Exception as hata:
+        print(colorama.Fore.RED + f"Beklenmedik Hata: {hata}")
+
+
+
 
 def webhookMesaj():
     os.system("cls")
@@ -94,12 +214,15 @@ def ipSorgu():
     print(colorama.Fore.WHITE + "1 = IP Sorgulama")
     print("2 = Webhook Mesaj")
     print("3 = Çıkış")
+    print("4 = URL Kısaltıcı")
     islem = input(colorama.Fore.GREEN)
     if islem == "1":
         ipSorgu()
     elif islem == "2":
         webhookMesaj()
     elif islem == "3":
+        urlKisalt()
+    elif islem == "4":
         sys.exit()
     else:
         print(colorama.Fore.RED + "Hatalı Seçim Menüye Dönülüyor!")
@@ -120,15 +243,19 @@ def start():
     print()
 
     print(colorama.Fore.BLUE + "Lütfen Yapmak İstediğiniz İşlemi Seçin")
-    print(colorama.Fore.WHITE + "1 = IP Sorgulama")
-    print("2 = Webhook Mesaj")
-    print("3 = Çıkış")
+    print(colorama.Fore.WHITE + "1 = IP Sorgulama     4 = Hava Durumu")
+    print("2 = Webhook Mesaj    5 = Çıkış")
+    print("3 = URL Kısaltıcı     ")
     islem = input(colorama.Fore.GREEN)
     if islem == "1":
         ipSorgu()
     elif islem == "2":
         webhookMesaj()
     elif islem == "3":
+        urlKisalt()
+    elif islem == "4":
+        havaDurumu()
+    elif islem == "5":
         sys.exit()
     else:
         print(colorama.Fore.RED + "Hatalı Seçim Menüye Dönülüyor!")
@@ -138,5 +265,19 @@ def start():
 
 if __name__ == "__main__":
     os.system("title Multi Tool By Musty")
-    start()
+    defaultSifre = "sa"
+    print(colorama.Fore.GREEN + filigran)
+    print()
+    print(colorama.Fore.BLUE + "Lütfen Şifreyi Giriniz!")
+    alinanSifre = input(colorama.Fore.WHITE)
+    if alinanSifre == defaultSifre:
+        os.system("cls||clear")
+        print(colorama.Fore.GREEN + basarili)
+        time.sleep(2)
+        start()
+    else:
+        os.system("cls || clear")
+        print(colorama.Fore.RED + basarisiz)
+        input()
+
 
