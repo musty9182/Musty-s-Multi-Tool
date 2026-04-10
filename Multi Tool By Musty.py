@@ -4,7 +4,6 @@ import colorama
 import json
 import time
 import sys
-import openmeteo_requests
 
 basarisiz = r"""
  ██████╗ ██╗██████╗ ██╗███████╗                               
